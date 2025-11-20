@@ -1,8 +1,8 @@
 import torch
 import torch.nn as nn
-from .attention import MultiHeadAttention
-from .drop_path import DropPath
-from .swiglu_ffn import SwiGLUFFN
+from layers.attention import MultiHeadAttention
+from layers.drop_path import DropPath
+from layers.swiglu_ffn import SwiGLUFFN
 
 
 class TransformerBlock(nn.Module):
