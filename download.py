@@ -38,13 +38,12 @@ def main():
     SAVE_ROOT = "./hf_dataset"
     SNAPSHOT_ROOT = "./hf_snapshot"
 
-    # Note: split is named "train" on HF, NOT "pretrain"
     TRAIN_DIR = os.path.join(SAVE_ROOT, "train")
 
     os.makedirs(TRAIN_DIR, exist_ok=True)
     os.makedirs(SNAPSHOT_ROOT, exist_ok=True)
 
-    print(">>> Downloading HF snapshot (via HF mirror)...")
+    print("Downloading HF snapshot (via HF mirror)...")
 
     with tqdm(total=1, desc="snapshot_download", ncols=80) as pbar:
         local_path = snapshot_download(
@@ -55,7 +54,7 @@ def main():
         )
         pbar.update(1)
 
-    print(">>> Snapshot stored at:", local_path)
+    print("Snapshot stored at:", local_path)
 
     # -----------------------------------------------------------
     # Load dataset locally
@@ -63,19 +62,19 @@ def main():
     print(">>> Loading dataset from local snapshot...")
     ds = load_dataset(
         local_path,
-        split="train",   # FIXED HERE
+        split="train",   
         streaming=False,
         keep_in_memory=False,
     )
 
     total = len(ds)
-    print(f">>> Total images detected in dataset: {total}")
-    print(f">>> Output directory: {TRAIN_DIR}")
+    print(f"Total images detected in dataset: {total}")
+    print(f"Output directory: {TRAIN_DIR}")
 
     # -----------------------------------------------------------
     # 8-thread extraction
     # -----------------------------------------------------------
-    print(">>> Extracting images with 8 threads...")
+    print("Extracting images with 8 threads...")
 
     with concurrent.futures.ThreadPoolExecutor(max_workers=8) as executor:
         futures = [
@@ -99,8 +98,8 @@ def main():
         if f.lower().endswith(".jpg")
     ])
 
-    print(f">>> Total extracted JPG images: {final_count}")
-    print(f">>> JPGs saved under: {TRAIN_DIR}")
+    print(f"Total extracted JPG images: {final_count}")
+    print(f"JPGs saved under: {TRAIN_DIR}")
 
 
 if __name__ == "__main__":
