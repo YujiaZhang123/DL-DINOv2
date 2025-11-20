@@ -1,9 +1,9 @@
 import torch
 import torch.nn as nn
 
-from .vision_transformer import VisionTransformer
-from .dino_head import DINOHead
-from .dino_loss import DINOLoss
+from models.vision_transformer import VisionTransformer
+from models.dino_head import DINOHead
+from models.dino_loss import DINOLoss
 
 
 class SSLArch(nn.Module):
