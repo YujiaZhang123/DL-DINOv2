@@ -1,0 +1,31 @@
+# Ignore Python cache
+__pycache__/
+*.pyc
+
+# HuggingFace dataset (26GB+)
+hf_dataset/
+hf_snapshot/
+
+# RunPod checkpoints
+checkpoints/
+*.pth
+
+# Logs
+*.log
+logs/
+
+# nohup output
+nohup.out
+
+# Jupyter / IDE files
+.ipynb_checkpoints/
+.vscode/
+.idea/
+
+# System files
+.DS_Store
+Thumbs.db
+
+# Temp or cache
+tmp/
+cache/
