@@ -1,8 +1,5 @@
 # ================================================================
 # download.py — Fast download of HF snapshot + Extract Arrow to JPG
-# Produces:
-#   hf_dataset/pretrain/0.jpg
-#   hf_dataset/pretrain/1.jpg
 # ================================================================
 
 import os
