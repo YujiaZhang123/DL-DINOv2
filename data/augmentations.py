@@ -1,5 +1,5 @@
 from torchvision import transforms
-from .transforms import GaussianBlur, make_normalize_transform
+from data.transforms import GaussianBlur, make_normalize_transform
 
 _AUGMENT_CONFIG_PRINTED = False
 
