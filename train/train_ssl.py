@@ -1,7 +1,9 @@
+import sys, os
+sys.path.append(os.path.abspath(os.path.join(os.path.dirname(__file__), "..")))
+
 import os
 import math
 from dataclasses import dataclass
-
 import torch
 from torch import nn
 from torch.optim import AdamW
