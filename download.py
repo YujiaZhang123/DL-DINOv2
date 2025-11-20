@@ -1,7 +1,3 @@
-# ================================================================
-# download.py — Fast HF snapshot download + 8-thread JPG extraction
-# ================================================================
-
 import os
 import concurrent.futures
 from datasets import load_dataset
@@ -12,7 +8,7 @@ from huggingface_hub import snapshot_download
 
 
 def save_image(idx, sample, output_dir):
-    """Save a single image (used by multithreading executor)."""
+    """Save a single image in multithreaded mode."""
     try:
         img = sample["image"]
 
@@ -28,6 +24,10 @@ def save_image(idx, sample, output_dir):
 
 def main():
 
+    os.environ["HF_ENDPOINT"] = "https://hf-mirror.com"
+    os.environ["HF_HOME"] = "/workspace/.cache/hf"
+    os.environ["HF_HUB_ENABLE_HF_TRANSFER"] = "1"
+
     SAVE_ROOT = "./hf_dataset"
     SNAPSHOT_ROOT = "./hf_snapshot"
     PRETRAIN_DIR = os.path.join(SAVE_ROOT, "pretrain")
@@ -35,9 +35,11 @@ def main():
     os.makedirs(PRETRAIN_DIR, exist_ok=True)
     os.makedirs(SNAPSHOT_ROOT, exist_ok=True)
 
-    print(">>> Downloading HF snapshot (Arrow files)...")
+    # -----------------------------------------------------------
+    # Step 1 — snapshot_download without timeout
+    # -----------------------------------------------------------
+    print(">>> Downloading HF snapshot (via HF mirror)...")
 
-    # HF hub shows internal chunk progress; tqdm wraps total=1
     with tqdm(total=1, desc="snapshot_download", ncols=80) as pbar:
         local_path = snapshot_download(
             repo_id="tsbpp/fall2025_deeplearning",
@@ -48,6 +50,10 @@ def main():
         pbar.update(1)
 
     print(">>> Snapshot stored at:", local_path)
+
+    # -----------------------------------------------------------
+    # Step 2 — Load dataset from snapshot (offline)
+    # -----------------------------------------------------------
     print(">>> Loading dataset from local snapshot...")
     ds = load_dataset(
         local_path,
@@ -60,6 +66,9 @@ def main():
     print(f">>> Total images detected in dataset: {total}")
     print(f">>> Output directory: {PRETRAIN_DIR}")
 
+    # -----------------------------------------------------------
+    # Step 3 — Multithreaded extraction (8 threads)
+    # -----------------------------------------------------------
     print(">>> Extracting images with 8 threads...")
 
     with concurrent.futures.ThreadPoolExecutor(max_workers=8) as executor:
@@ -68,7 +77,6 @@ def main():
             for idx, sample in enumerate(ds)
         ]
 
-        # tqdm over completed futures
         for _ in tqdm(
             concurrent.futures.as_completed(futures),
             total=len(futures),
@@ -79,6 +87,9 @@ def main():
 
     print("\n>>> Extraction complete!")
 
+    # -----------------------------------------------------------
+    # Step 4 — Count extracted images
+    # -----------------------------------------------------------
     final_count = len([
         f for f in os.listdir(PRETRAIN_DIR)
         if f.lower().endswith(".jpg")
