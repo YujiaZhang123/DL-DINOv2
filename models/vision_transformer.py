@@ -2,9 +2,8 @@ import torch
 import torch.nn as nn
 import numpy as np
 
-from ..layers.patch_embed import PatchEmbed
-from ..layers.block import TransformerBlock
-
+from layers.patch_embed import PatchEmbed
+from layers.block import TransformerBlock
 
 class PatchNorm(nn.Module):
     """
