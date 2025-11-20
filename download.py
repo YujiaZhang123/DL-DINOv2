@@ -1,34 +1,49 @@
-
+# ================================================================
+# download.py — Fast download of HF snapshot + Extract Arrow to JPG
+# Produces:
+#   hf_dataset/pretrain/0.jpg
+#   hf_dataset/pretrain/1.jpg
+# ================================================================
 
 import os
 from datasets import load_dataset
 from PIL import Image
 import numpy as np
 from tqdm import tqdm
-
+from huggingface_hub import snapshot_download
 
 def main():
 
-    # download data from huggingface
     SAVE_ROOT = "./hf_dataset"
+    SNAPSHOT_DIR = "./hf_snapshot"     # where snapshot_download stores Arrow files
     PRETRAIN_DIR = os.path.join(SAVE_ROOT, "pretrain")
 
-    #
     os.makedirs(PRETRAIN_DIR, exist_ok=True)
+    os.makedirs(SNAPSHOT_DIR, exist_ok=True)
 
-    print(">>> From HuggingFace Load Dataset tsbpp/fall2025_deeplearning ...")
+    print(">>> Downloading HF snapshot (Arrow files)...")
+    local_path = snapshot_download(
+        repo_id="tsbpp/fall2025_deeplearning",
+        repo_type="dataset",
+        local_dir=SNAPSHOT_DIR,
+        local_dir_use_symlinks=False
+    )
+    print(">>> Snapshot downloaded at:", local_path)
+
+
+    print(">>> Loading dataset from local snapshot (no network access)...")
     ds = load_dataset(
-        "tsbpp/fall2025_deeplearning",
+        local_path,
         split="pretrain",
-        streaming=False
+        streaming=False,
+        keep_in_memory=False
     )
 
     total = len(ds)
-    print(f">>> Dataset contains {total} images")
-    print(f">>> Save DIR: {PRETRAIN_DIR}")
+    print(f">>> Total images in dataset: {total}")
+    print(f">>> Output directory: {PRETRAIN_DIR}")
 
-
-    for i, sample in enumerate(tqdm(ds, desc="save pretrain images", ncols=80)):
+    for i, sample in enumerate(tqdm(ds, desc="Extracting images", ncols=80)):
         img = sample["image"]
 
         if not isinstance(img, Image.Image):
@@ -37,7 +52,8 @@ def main():
         out_path = os.path.join(PRETRAIN_DIR, f"{i}.jpg")
         img.save(out_path, "JPEG", quality=95)
 
-    print(f">>> Done! All images saves as: {PRETRAIN_DIR}")
+    print("\n>>> Extraction completed successfully!")
+    print(f">>> JPG images saved under: {PRETRAIN_DIR}")
 
 
 if __name__ == "__main__":
