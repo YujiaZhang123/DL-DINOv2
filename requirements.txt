@@ -5,7 +5,7 @@ numpy>=1.23
 tqdm>=4.65
 
 #datasets
-dataset
+datasets
 
 # Image & augmentation
 Pillow>=10.0
