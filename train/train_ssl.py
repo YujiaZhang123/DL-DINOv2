@@ -1,16 +1,15 @@
 import sys
 import os
-
 sys.path.append(os.path.abspath(os.path.join(os.path.dirname(__file__), "..")))
 
 import math
 from dataclasses import dataclass
+
 import torch
 from torch import nn
 from torch.optim import AdamW
 from torch.optim.lr_scheduler import LambdaLR
 from tqdm import tqdm
-from huggingface_hub import snapshot_download
 
 from data.augmentations import DataAugmentationDINO
 from data.dataset import SSLDataset
@@ -24,28 +23,22 @@ from models.ssl import SSLArch
 #################################################################
 @dataclass
 class TrainingConfig:
-    hf_repo: str = "tsbpp/fall2025_deeplearning"
-    split: str = "pretrain"
-    local_dir: str = "./hf_dataset"
-
-    # Image
+    local_dir: str = "./hf_dataset"   # use local data
+    split: str = "pretrain"         #use pretrain folder
     img_size: int = 96
     patch_size: int = 8
 
-    # ViT backbone
     embed_dim: int = 480
     depth: int = 12
     num_heads: int = 8
     mlp_ratio: float = 4.0
     num_prototypes: int = 8192
 
-    # Multi-crop
     n_global_crops: int = 2
     n_local_crops: int = 6
     global_crops_scale: tuple = (0.4, 1.0)
     local_crops_scale: tuple = (0.05, 0.3)
 
-    # Training hyperparams
     batch_size: int = 200
     num_workers: int = 8
     epochs: int = 360
@@ -54,14 +47,12 @@ class TrainingConfig:
     weight_decay: float = 0.04
     warmup_epochs: int = 10
 
-    # Teacher EMA
     momentum_teacher_base: float = 0.996
     momentum_teacher_final: float = 0.9995
 
-    # ====== NEW: teacher temperature schedule ======
-    teacher_temp_warmup: float = 0.04       # start
-    teacher_temp_final: float = 0.07        # end
-    teacher_temp_warmup_epochs: int = 30    # warmup length
+    teacher_temp_warmup: float = 0.04
+    teacher_temp_final: float = 0.07
+    teacher_temp_warmup_epochs: int = 30
 
     device: str = "cuda"
     output_dir: str = "checkpoints"
@@ -80,37 +71,34 @@ def set_seed(seed=42):
 
 
 #################################################################
-# Downloading HuggingFace dataset
+# Load LOCAL DATASET (NO DOWNLOAD)
 #################################################################
-def download_dataset(cfg: TrainingConfig):
-    if os.path.exists(cfg.local_dir):
-        print(f"[download] Found local dataset at {cfg.local_dir}")
-        return
+def load_local_dataset(cfg: TrainingConfig):
 
-    print(f"[download] Downloading HF dataset {cfg.hf_repo} ...")
+    data_root = os.path.join(cfg.local_dir, cfg.split)
 
-    path = snapshot_download(
-        repo_id=cfg.hf_repo,
-        repo_type="dataset",
-        local_dir=cfg.local_dir,
-        local_dir_use_symlinks=False,
-    )
+    if not os.path.exists(data_root):
+        raise FileNotFoundError(
+            f"[ERROR] folder not found: {data_root}\n"
+            f"请将本地数据上传到 {cfg.local_dir}/{cfg.split}/"
+        )
 
-    # Count total images
-    count = 0
-    for root, _, files in os.walk(path):
+    # 遍历图片
+    img_paths = []
+    for root, _, files in os.walk(data_root):
         for f in files:
-            if f.lower().endswith((".png", ".jpg", ".jpeg")):
-                count += 1
+            if f.lower().endswith((".jpg", ".jpeg", ".png")):
+                img_paths.append(os.path.join(root, f))
 
-    print(f"[download] Done! Downloaded {count} images into {cfg.local_dir}")
+    print(f"[dataset] 本地找到 {len(img_paths)} 张图片 in {data_root}")
+
+    return img_paths
 
 
 #################################################################
 # Schedules
 #################################################################
 def cosine_schedule(base, final, total_steps, warmup_steps=0):
-    # DINO style schedule
     def lr_lambda(step):
         if step < warmup_steps:
             return step / max(1, warmup_steps)
@@ -126,7 +114,6 @@ def teacher_momentum_schedule(base, final, total_steps):
     return m_lambda
 
 
-# ---------- NEW: teacher temperature schedule ----------
 def teacher_temp_schedule(cfg, global_step, steps_per_epoch):
     warmup_steps = cfg.teacher_temp_warmup_epochs * steps_per_epoch
     if global_step >= warmup_steps:
@@ -139,18 +126,8 @@ def teacher_temp_schedule(cfg, global_step, steps_per_epoch):
 # Build dataloader
 #################################################################
 def build_dataloader(cfg):
-    download_dataset(cfg)
 
-    subdir = os.path.join(cfg.local_dir, cfg.split)
-    assert os.path.exists(subdir), f"folder {subdir} does not exist in HF dataset"
-
-    img_paths = []
-    for root, _, files in os.walk(subdir):
-        for f in files:
-            if f.lower().endswith((".png", ".jpg", ".jpeg")):
-                img_paths.append(os.path.join(root, f))
-
-    print(f"[dataset] Found {len(img_paths)} images.")
+    img_paths = load_local_dataset(cfg)
 
     augment = DataAugmentationDINO(
         global_crops_scale=cfg.global_crops_scale,
@@ -230,7 +207,6 @@ def train(cfg: TrainingConfig):
     global_step = 0
     print("==> Start training")
 
-    # ---------------- TRAIN LOOP ---------------- #
     for epoch in range(cfg.epochs):
         epoch_loss = 0
         pbar = tqdm(dataloader, ncols=100, desc=f"Epoch {epoch+1}/{cfg.epochs}")
@@ -244,15 +220,12 @@ def train(cfg: TrainingConfig):
                 "local_crops": local_crops,
             }
 
-            # ---- compute teacher temp ----
             teacher_temp = teacher_temp_schedule(cfg, global_step, steps_per_epoch)
-
-            # ---- compute teacher momentum ----
             momentum = m_schedule(global_step)
 
             optimizer.zero_grad(set_to_none=True)
 
-            loss, logs = model(data_dict, teacher_temp=teacher_temp)
+            loss, _ = model(data_dict, teacher_temp=teacher_temp)
             loss.backward()
             nn.utils.clip_grad_norm_(model.parameters(), 1.0)
             optimizer.step()
@@ -275,7 +248,6 @@ def train(cfg: TrainingConfig):
 
         print(f"[epoch {epoch+1}] avg_loss = {epoch_loss/steps_per_epoch:.4f}")
 
-        # Save every 20 epochs
         if (epoch + 1) % 20 == 0 or (epoch + 1) == cfg.epochs:
             ckpt = {
                 "epoch": epoch + 1,
