@@ -26,18 +26,18 @@ class TrainingConfig:
     local_dir: str = "./hf_dataset"   # use local data
     split: str = "train"         #use train folder
     img_size: int = 96
-    patch_size: int = 8
+    patch_size: int = 12
 
-    embed_dim: int = 480
+    embed_dim: int = 432
     depth: int = 12
     num_heads: int = 8
     mlp_ratio: float = 4.0
     num_prototypes: int = 8192
 
     n_global_crops: int = 2
-    n_local_crops: int = 4
+    n_local_crops: int = 2
     global_crops_scale: tuple = (0.4, 1.0)
-    local_crops_scale: tuple = (0.05, 0.3)
+    local_crops_scale: tuple = (0.1, 0.4)
 
     batch_size: int = 200
     num_workers: int = 8
