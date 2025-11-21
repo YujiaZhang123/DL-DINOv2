@@ -23,31 +23,36 @@ from models.ssl import SSLArch
 #################################################################
 @dataclass
 class TrainingConfig:
+    # ----- data -----
     local_dir: str = "./hf_dataset"   # use local data
-    split: str = "train"         #use train folder
+    split: str = "train"              # use train/ folder
     img_size: int = 96
-    patch_size: int = 12
+    patch_size: int = 12              # 96/12 = 8x8 tokens
 
-    embed_dim: int = 432
+    # ----- model -----
+    embed_dim: int = 480
     depth: int = 12
     num_heads: int = 8
     mlp_ratio: float = 4.0
-    num_prototypes: int = 4096
+    num_prototypes: int = 4096        
 
+    # ----- multi-crop -----
+    # 要求：global = 4, local = 2
     n_global_crops: int = 2
-    n_local_crops: int = 2
+    n_local_crops: int = 4
     global_crops_scale: tuple = (0.4, 1.0)
     local_crops_scale: tuple = (0.1, 0.4)
 
-    batch_size: int = 150
+    # ----- optimization -----
+    batch_size: int = 100             
     num_workers: int = 48
     epochs: int = 260
-    base_lr: float = 1e-4
+    base_lr: float = 2e-4
     min_lr: float = 1e-5
     weight_decay: float = 0.04
     warmup_epochs: int = 10
 
-    momentum_teacher_base: float = 0.996
+    momentum_teacher_base: float = 0.995
     momentum_teacher_final: float = 0.9995
 
     teacher_temp_warmup: float = 0.04
@@ -132,8 +137,8 @@ def build_dataloader(cfg):
         global_crops_scale=cfg.global_crops_scale,
         local_crops_scale=cfg.local_crops_scale,
         local_crops_number=cfg.n_local_crops,
-        global_crops_size=cfg.img_size,
-        local_crops_size=cfg.img_size,
+        global_crops_size=cfg.img_size,         # 96
+        local_crops_size=cfg.img_size // 2,     # 48
     )
 
     dataset = SSLDataset(img_paths, augment)
@@ -207,8 +212,8 @@ def train(cfg: TrainingConfig):
     print("==> Start training")
 
     for epoch in range(cfg.epochs):
-        epoch_loss = 0
-        pbar = tqdm(dataloader, ncols=100, desc=f"Epoch {epoch+1}/{cfg.epochs}")
+        epoch_loss = 0.0
+        pbar = tqdm(dataloader, ncols=120, desc=f"Epoch {epoch+1}/{cfg.epochs}")
 
         for batch in pbar:
             global_crops = [x.to(device, non_blocking=True) for x in batch["global_crops"]]
@@ -247,7 +252,7 @@ def train(cfg: TrainingConfig):
 
         print(f"[epoch {epoch+1}] avg_loss = {epoch_loss/steps_per_epoch:.4f}")
 
-        if (epoch + 1) % 20 == 0 or (epoch + 1) == cfg.epochs:
+        if (epoch + 1) % 10 == 0 or (epoch + 1) == cfg.epochs:
             ckpt = {
                 "epoch": epoch + 1,
                 "student_backbone": model.student_backbone.state_dict(),
