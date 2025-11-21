@@ -5,7 +5,7 @@ from torch.utils.data import DataLoader
 def create_dataloader(
     dataset,
     batch_size: int,
-    num_workers: int = 4,
+    num_workers: int = None,
     collate_fn=None,
     shuffle: bool = True,
     drop_last: bool = True,
