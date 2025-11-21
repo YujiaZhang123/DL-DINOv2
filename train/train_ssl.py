@@ -90,7 +90,7 @@ def load_local_dataset(cfg: TrainingConfig):
             if f.lower().endswith((".jpg", ".jpeg", ".png")):
                 img_paths.append(os.path.join(root, f))
 
-    print(f"[dataset] 本地找到 {len(img_paths)} 张图片 in {data_root}")
+    print(f"[dataset] find {len(img_paths)} images in {data_root}")
 
     return img_paths
 
