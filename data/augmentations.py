@@ -11,7 +11,7 @@ class DataAugmentationDINO(object):
         local_crops_scale=(0.1, 0.4),
         local_crops_number=4,
         global_crops_size=96,
-        local_crops_size=96,
+        local_crops_size=48,
     ):
         self.global_crops_scale = global_crops_scale
         self.local_crops_scale = local_crops_scale
