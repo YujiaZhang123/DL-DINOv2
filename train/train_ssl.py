@@ -30,7 +30,7 @@ class TrainingConfig:
     patch_size: int = 8              
 
     # ----- model -----
-    embed_dim: int = 480
+    embed_dim: int = 384
     depth: int = 12
     num_heads: int = 8
     mlp_ratio: float = 4.0
