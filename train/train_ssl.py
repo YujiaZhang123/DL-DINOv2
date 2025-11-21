@@ -80,7 +80,7 @@ def load_local_dataset(cfg: TrainingConfig):
     if not os.path.exists(data_root):
         raise FileNotFoundError(
             f"[ERROR] folder not found: {data_root}\n"
-            f"请将本地数据上传到 {cfg.local_dir}/{cfg.split}/"
+            f"upload files to {cfg.local_dir}/{cfg.split}/"
         )
 
     # 遍历图片
