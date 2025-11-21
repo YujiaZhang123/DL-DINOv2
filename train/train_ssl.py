@@ -37,7 +37,6 @@ class TrainingConfig:
     num_prototypes: int = 4096        
 
     # ----- multi-crop -----
-    # 要求：global = 4, local = 2
     n_global_crops: int = 2
     n_local_crops: int = 4
     global_crops_scale: tuple = (0.4, 1.0)
