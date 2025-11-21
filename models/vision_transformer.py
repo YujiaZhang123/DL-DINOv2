@@ -60,7 +60,6 @@ class VisionTransformer(nn.Module):
 
         # -------- 2. CLS token + positional embedding --------
         self.cls_token = nn.Parameter(torch.zeros(1, 1, embed_dim))
-        # 这里是“基准分辨率”(global 96x96) 的 pos_embed
         self.pos_embed = nn.Parameter(torch.zeros(1, num_patches + 1, embed_dim))
 
         # -------- 3. DropPath schedule (stochastic depth) --------
@@ -91,8 +90,7 @@ class VisionTransformer(nn.Module):
     def get_pos_embed(self, n_patches: int, device=None):
         if n_patches + 1 == self.pos_embed.shape[1]:
             return self.pos_embed.to(device) if device is not None else self.pos_embed
-
-        # 拆分 cls 和 patch 的 pos
+            
         cls_pos = self.pos_embed[:, :1, :]    # [1,1,D]
         patch_pos = self.pos_embed[:, 1:, :]  # [1, base_N, D]
 
@@ -131,8 +129,6 @@ class VisionTransformer(nn.Module):
 
         # 3. dropout
         x = self.patch_dropout(x)
-
-        # 当前 patch 数（不含 CLS）
         n_patches = x.size(1)
 
         # 4. Add CLS
