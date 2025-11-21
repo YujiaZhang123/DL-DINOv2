@@ -32,7 +32,7 @@ class TrainingConfig:
     # ----- model -----
     embed_dim: int = 384
     depth: int = 12
-    num_heads: int = 8
+    num_heads: int = 6
     mlp_ratio: float = 4.0
     num_prototypes: int = 4096        
 
