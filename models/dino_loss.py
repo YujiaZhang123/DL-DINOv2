@@ -61,7 +61,7 @@ class DINOLoss(nn.Module):
             scalar loss
         """
         # ----------------------------
-        # 1) 更新 center
+        # 1) update
         # ----------------------------
         with torch.no_grad():
             all_teacher = torch.cat(teacher_logits_list, dim=0)
