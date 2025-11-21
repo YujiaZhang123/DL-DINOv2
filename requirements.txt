@@ -10,8 +10,6 @@ datasets
 Pillow>=10.0
 # HuggingFace dataset download
 huggingface_hub>=0.20.0
-zipfile
-glob
 # Utility
 dataclasses; python_version < "3.7"
 
