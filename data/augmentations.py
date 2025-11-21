@@ -55,7 +55,7 @@ class DataAugmentationDINO(object):
                 [transforms.ColorJitter(
                     brightness=0.4,
                     contrast=0.4,
-                    saturation=0.2,
+                    saturation=0.4,
                     hue=0.1
                 )],
                 p=0.8,
@@ -69,7 +69,7 @@ class DataAugmentationDINO(object):
             GaussianBlur(p=0.1),
             transforms.RandomSolarize(threshold=128, p=0.2),
         ])
-        local_transfo_extra = GaussianBlur(p=0.5)
+        local_transfo_extra = GaussianBlur(p=0.2)
 
         # ========= normalization ==========
         self.normalize = transforms.Compose([
