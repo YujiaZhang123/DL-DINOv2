@@ -25,9 +25,9 @@ class VisionTransformer(nn.Module):
         self,
         img_size: int = 96,
         patch_size: int = 8,
-        embed_dim: int = 480,
+        embed_dim: int = 384,
         depth: int = 12,
-        num_heads: int = 8,
+        num_heads: int = 6,
         mlp_ratio: float = 4.0,
         drop_path_rate: float = 0.1,
         dropout_rate: float = 0.0,     # newly added
