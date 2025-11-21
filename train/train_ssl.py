@@ -83,7 +83,6 @@ def load_local_dataset(cfg: TrainingConfig):
             f"upload files to {cfg.local_dir}/{cfg.split}/"
         )
 
-    # 遍历图片
     img_paths = []
     for root, _, files in os.walk(data_root):
         for f in files:
