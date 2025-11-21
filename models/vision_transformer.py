@@ -1,9 +1,12 @@
+import math
 import torch
 import torch.nn as nn
+import torch.nn.functional as F
 import numpy as np
 
 from layers.patch_embed import PatchEmbed
 from layers.block import TransformerBlock
+
 
 class PatchNorm(nn.Module):
     """
@@ -43,7 +46,7 @@ class VisionTransformer(nn.Module):
             embed_dim=embed_dim,
         )
 
-        num_patches = self.patch_embed.num_patches
+        num_patches = self.patch_embed.num_patches  # 96x96 -> 12x12 -> 144
 
         # Optional PatchNorm
         self.use_patchnorm = use_patchnorm
@@ -57,6 +60,7 @@ class VisionTransformer(nn.Module):
 
         # -------- 2. CLS token + positional embedding --------
         self.cls_token = nn.Parameter(torch.zeros(1, 1, embed_dim))
+        # 这里是“基准分辨率”(global 96x96) 的 pos_embed
         self.pos_embed = nn.Parameter(torch.zeros(1, num_patches + 1, embed_dim))
 
         # -------- 3. DropPath schedule (stochastic depth) --------
@@ -69,7 +73,7 @@ class VisionTransformer(nn.Module):
                 num_heads=num_heads,
                 mlp_ratio=mlp_ratio,
                 drop_path=float(dpr_values[i]),
-                use_layerscale=use_layerscale,       # <--- I will patch this inside block
+                use_layerscale=use_layerscale,
             )
             for i in range(depth)
         ])
@@ -84,11 +88,42 @@ class VisionTransformer(nn.Module):
         nn.init.trunc_normal_(self.pos_embed, std=0.02)
         nn.init.normal_(self.cls_token, std=1e-6)
 
+    def get_pos_embed(self, n_patches: int, device=None):
+        if n_patches + 1 == self.pos_embed.shape[1]:
+            return self.pos_embed.to(device) if device is not None else self.pos_embed
+
+        # 拆分 cls 和 patch 的 pos
+        cls_pos = self.pos_embed[:, :1, :]    # [1,1,D]
+        patch_pos = self.pos_embed[:, 1:, :]  # [1, base_N, D]
+
+        base_n = patch_pos.shape[1]
+        base_hw = int(math.sqrt(base_n))
+        assert base_hw * base_hw == base_n, "base_n is not a square number"
+
+        new_hw = int(math.sqrt(n_patches))
+        assert new_hw * new_hw == n_patches, f"n_patches={n_patches} invalid"
+
+        # [1, base_N, D] -> [1, D, base_hw, base_hw]
+        patch_pos = patch_pos.reshape(1, base_hw, base_hw, -1).permute(0, 3, 1, 2)
+
+        patch_pos = F.interpolate(
+            patch_pos,
+            size=(new_hw, new_hw),
+            mode="bicubic",
+            align_corners=False,
+        )
+
+        # [1, D, new_hw, new_hw] -> [1, new_N, D]
+        patch_pos = patch_pos.permute(0, 2, 3, 1).reshape(1, n_patches, -1)
+
+        pos = torch.cat([cls_pos, patch_pos], dim=1)  # [1, n_patches+1, D]
+        return pos.to(device) if device is not None else pos
+
     def forward(self, x: torch.Tensor) -> torch.Tensor:
 
         B = x.size(0)
 
-        # 1. patchify -> [B, N, D]
+        # 1. patchify -> [B, N, D]  (global: N=144, local: N=36)
         x = self.patch_embed(x)
 
         # 2. PatchNorm (optional)
@@ -97,12 +132,16 @@ class VisionTransformer(nn.Module):
         # 3. dropout
         x = self.patch_dropout(x)
 
-        # 4. Add CLS
-        cls_tok = self.cls_token.expand(B, -1, -1)
-        x = torch.cat([cls_tok, x], dim=1)
+        # 当前 patch 数（不含 CLS）
+        n_patches = x.size(1)
 
-        # 5. Add positional embed
-        x = x + self.pos_embed
+        # 4. Add CLS
+        cls_tok = self.cls_token.expand(B, -1, -1)   # [B,1,D]
+        x = torch.cat([cls_tok, x], dim=1)           # [B, N+1, D]
+
+        # 5. Add (interpolated) positional embed
+        pos = self.get_pos_embed(n_patches, device=x.device)  # [1, N+1, D]
+        x = x + pos
 
         # 6. Transformer blocks
         for blk in self.blocks:
