@@ -1,105 +1,102 @@
 # ================================================================
-# download.py — Fast HF snapshot download + 8-thread JPG extraction
+# download.py — snapshot + zipfi;e
 # ================================================================
 
 import os
-import concurrent.futures
-from datasets import load_dataset
-from PIL import Image
-import numpy as np
+import zipfile
+from glob import glob
 from tqdm import tqdm
 from huggingface_hub import snapshot_download
+from concurrent.futures import ThreadPoolExecutor, as_completed
 
+HF_REPO = "tsbpp/fall2025_deeplearning"
+MAX_THREADS = 4    
+MAX_ZIP_WORKERS = 5 
 
-def save_image(idx, sample, output_dir):
-    """Save a single image in multithreaded mode."""
-    try:
-        img = sample["image"]
+def extract_single_zip(zip_path, out_dir):
+    zname = os.path.basename(zip_path)
+    print(f"\n>>> Extracting {zname} ...")
 
-        if not isinstance(img, Image.Image):
-            img = Image.fromarray(np.array(img))
+    with zipfile.ZipFile(zip_path, "r") as zf:
+        members = zf.namelist()
+        pending = [m for m in members if not os.path.exists(os.path.join(out_dir, m))]
 
-        out_path = os.path.join(output_dir, f"{idx}.jpg")
-        img.save(out_path, "JPEG", quality=95)
-        return True
-    except Exception:
-        return False
+        if len(pending) == 0:
+            print(f"    {zname}: already extracted, skipping.")
+            return len(members)
+
+        def extract_one(m):
+            zf.extract(m, out_dir)
+            return True
+
+        with ThreadPoolExecutor(max_workers=MAX_THREADS) as ex:
+            futures = [ex.submit(extract_one, m) for m in pending]
+
+            for _ in tqdm(
+                as_completed(futures),
+                total=len(futures),
+                desc=f"{zname}",
+                unit="file",
+                ncols=80,
+            ):
+                pass
+
+    return len(members)
 
 
 def main():
-
-    # -----------------------------------------------------------
-    # Use HF Mirror for stability on RunPod
-    # -----------------------------------------------------------
     os.environ["HF_ENDPOINT"] = "https://hf-mirror.com"
     os.environ["HF_HOME"] = "/workspace/.cache/hf"
     os.environ["HF_HUB_ENABLE_HF_TRANSFER"] = "1"
 
-    SAVE_ROOT = "./hf_dataset"
     SNAPSHOT_ROOT = "./hf_snapshot"
+    OUT_DIR = "./hf_dataset/train"
 
-    TRAIN_DIR = os.path.join(SAVE_ROOT, "train")
-
-    os.makedirs(TRAIN_DIR, exist_ok=True)
     os.makedirs(SNAPSHOT_ROOT, exist_ok=True)
+    os.makedirs(OUT_DIR, exist_ok=True)
 
-    print("Downloading HF snapshot (via HF mirror)...")
+    print(">>> Downloading HF snapshot ...")
 
-    with tqdm(total=1, desc="snapshot_download", ncols=80) as pbar:
-        local_path = snapshot_download(
-            repo_id="tsbpp/fall2025_deeplearning",
-            repo_type="dataset",
-            local_dir=SNAPSHOT_ROOT,
-            local_dir_use_symlinks=False,
-        )
-        pbar.update(1)
-
-    print("Snapshot stored at:", local_path)
+    local_path = snapshot_download(
+        repo_id=HF_REPO,
+        repo_type="dataset",
+        local_dir=SNAPSHOT_ROOT,
+        local_dir_use_symlinks=False,
+    )
+    print(f"Snapshot stored at: {local_path}")
 
     # -----------------------------------------------------------
-    # Load dataset locally
+    # Locate ZIP files
     # -----------------------------------------------------------
-    print(">>> Loading dataset from local snapshot...")
-    ds = load_dataset(
-        local_path,
-        split="train",   
-        streaming=False,
-        keep_in_memory=False,
+    zip_files = sorted(glob(os.path.join(local_path, "cc3m_96px_part*.zip")))
+
+    if not zip_files:
+        raise RuntimeError("No ZIP files found in snapshot! Something is wrong.")
+
+    print("\n>>> Found ZIP files:")
+    for z in zip_files:
+        print("   -", os.path.basename(z))
+
+    # -----------------------------------------------------------
+    # Parallel extraction of each ZIP
+    # -----------------------------------------------------------
+    print("\n>>> Starting parallel ZIP extraction ...")
+
+    with ThreadPoolExecutor(max_workers=MAX_ZIP_WORKERS) as executor:
+        results = list(executor.map(lambda z: extract_single_zip(z, OUT_DIR), zip_files))
+
+    # -----------------------------------------------------------
+    # Final JPG count
+    # -----------------------------------------------------------
+    print("\n>>> Counting extracted images ...")
+    total_jpg = sum(
+        1 for f in os.listdir(OUT_DIR)
+        if f.lower().endswith((".jpg", ".jpeg", ".png"))
     )
 
-    total = len(ds)
-    print(f"Total images detected in dataset: {total}")
-    print(f"Output directory: {TRAIN_DIR}")
-
-    # -----------------------------------------------------------
-    # 8-thread extraction
-    # -----------------------------------------------------------
-    print("Extracting images with 8 threads...")
-
-    with concurrent.futures.ThreadPoolExecutor(max_workers=8) as executor:
-        futures = [
-            executor.submit(save_image, idx, sample, TRAIN_DIR)
-            for idx, sample in enumerate(ds)
-        ]
-
-        for _ in tqdm(
-            concurrent.futures.as_completed(futures),
-            total=len(futures),
-            desc="Extracting images",
-            ncols=80
-        ):
-            pass
-
-    print("\n>>> Extraction complete!")
-
-    # Final JPG count
-    final_count = len([
-        f for f in os.listdir(TRAIN_DIR)
-        if f.lower().endswith(".jpg")
-    ])
-
-    print(f"Total extracted JPG images: {final_count}")
-    print(f"JPGs saved under: {TRAIN_DIR}")
+    print(f"\n>>> Extraction complete!")
+    print(f">>> Total extracted images: {total_jpg}")
+    print(f">>> Images saved in: {OUT_DIR}")
 
 
 if __name__ == "__main__":
