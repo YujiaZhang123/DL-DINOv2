@@ -16,14 +16,12 @@ def collate_multicrop(batch):
             "global_crops": list of Tensors, each of shape (B, C, H, W)
             "local_crops":  list of Tensors, each of shape (B, C, H, W)
     """
-    # assume batch 非空，且每个 sample 的 view 数相同
     num_global = len(batch[0]["global_crops"])
     num_local = len(batch[0]["local_crops"])
 
     # ---- collate global crops ----
     global_crops = []
     for i in range(num_global):
-        # stack 第 i 个 global view 的所有样本
         global_crops.append(
             torch.stack([sample["global_crops"][i] for sample in batch], dim=0)
         )
