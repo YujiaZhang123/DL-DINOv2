@@ -34,7 +34,7 @@ class TrainingConfig:
     depth: int = 12
     num_heads: int = 6
     mlp_ratio: float = 4.0
-    num_prototypes: int = 4096        
+    num_prototypes: int = 8192
 
     # ----- multi-crop -----
     n_global_crops: int = 2
