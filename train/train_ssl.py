@@ -39,7 +39,7 @@ class TrainingConfig:
     global_crops_scale: tuple = (0.4, 1.0)
     local_crops_scale: tuple = (0.1, 0.4)
 
-    batch_size: int = 200
+    batch_size: int = 128
     num_workers: int = 48
     epochs: int = 360
     base_lr: float = 1e-4
