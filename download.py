@@ -18,15 +18,25 @@ def extract_single_zip(zip_path, out_dir):
     print(f"\n>>> Extracting {zname} ...")
 
     with zipfile.ZipFile(zip_path, "r") as zf:
-        members = zf.namelist()
-        pending = [m for m in members if not os.path.exists(os.path.join(out_dir, m))]
+        members = [m for m in zf.namelist() if m.lower().endswith((".jpg", ".jpeg", ".png"))]
 
-        if len(pending) == 0:
-            print(f"    {zname}: already extracted, skipping.")
+        pending = []
+
+        for m in members:
+            clean_name = os.path.basename(m)
+            if not os.path.exists(os.path.join(out_dir, clean_name)):
+                pending.append(m)
+
+        if not pending:
+            print(f"    {zname}: already extracted. Skipping.")
             return len(members)
 
         def extract_one(m):
-            zf.extract(m, out_dir)
+            clean_name = os.path.basename(m)
+            target_path = os.path.join(out_dir, clean_name)
+
+            with zf.open(m) as src, open(target_path, "wb") as dst:
+                dst.write(src.read())
             return True
 
         with ThreadPoolExecutor(max_workers=MAX_THREADS) as ex:
@@ -42,7 +52,6 @@ def extract_single_zip(zip_path, out_dir):
                 pass
 
     return len(members)
-
 
 def main():
     os.environ["HF_ENDPOINT"] = "https://hf-mirror.com"
