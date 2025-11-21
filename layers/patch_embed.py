@@ -17,7 +17,7 @@ class PatchEmbed(nn.Module):
         img_size: int = 96,
         patch_size: int = 8,
         in_channels: int = 3,
-        embed_dim: int = 480,
+        embed_dim: int = 384,
     ):
         super().__init__()
 
