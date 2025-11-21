@@ -35,11 +35,11 @@ class TrainingConfig:
     num_prototypes: int = 8192
 
     n_global_crops: int = 2
-    n_local_crops: int = 6
+    n_local_crops: int = 4
     global_crops_scale: tuple = (0.4, 1.0)
     local_crops_scale: tuple = (0.05, 0.3)
 
-    batch_size: int = 50
+    batch_size: int = 200
     num_workers: int = 8
     epochs: int = 360
     base_lr: float = 1e-4
