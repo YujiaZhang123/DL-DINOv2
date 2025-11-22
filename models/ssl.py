@@ -112,25 +112,20 @@ class SSLArch(nn.Module):
         return student_logits
 
     def forward(self, batch, teacher_temp=None):
-
-        global_crops = batch["global_crops"]   # list[Tensors]
+        global_crops = batch["global_crops"]
         local_crops  = batch["local_crops"]
 
         # teacher outputs
         with torch.no_grad():
-            if teacher_temp is not None:
-                old = self.dino_loss.teacher_temp
-                self.dino_loss.teacher_temp = teacher_temp
-
             teacher_logits = self.forward_teacher(global_crops)
-
-            if teacher_temp is not None:
-                self.dino_loss.teacher_temp = old
 
         # student outputs
         student_logits = self.forward_student(global_crops, local_crops)
 
-        # DINO loss
+        if teacher_temp is not None:
+            self.dino_loss.teacher_temp = teacher_temp
+
+        # loss
         loss = self.dino_loss(student_logits, teacher_logits)
         logs = {"loss": loss.detach()}
 
