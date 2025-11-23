@@ -45,8 +45,8 @@ class TrainingConfig:
     # ----- optimization -----
     batch_size: int = 200             
     num_workers: int = 20
-    epochs: int = 260
-    base_lr: float = 8e-5
+    epochs: int = 160
+    base_lr: float = 2e-4
     min_lr: float = 1e-5
     weight_decay: float = 0.04
     warmup_epochs: int = 10
@@ -163,7 +163,7 @@ def build_model(cfg):
         depth=cfg.depth,
         num_heads=cfg.num_heads,
         mlp_ratio=cfg.mlp_ratio,
-        drop_path_rate=0.1,
+        drop_path_rate=0.0,
         num_prototypes=cfg.num_prototypes,
         n_global_crops=cfg.n_global_crops,
         n_local_crops=cfg.n_local_crops,
