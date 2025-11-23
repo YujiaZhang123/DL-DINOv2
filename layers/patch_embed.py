@@ -17,7 +17,7 @@ class PatchEmbed(nn.Module):
         img_size: int = 96,
         patch_size: int = 8,
         in_channels: int = 3,
-        embed_dim: int = 384,
+        embed_dim: int = 768,
     ):
         super().__init__()
 
@@ -44,15 +44,7 @@ class PatchEmbed(nn.Module):
             nn.init.normal_(self.proj.bias, std=1e-6)
 
     def forward(self, x: torch.Tensor):
-        """
-        Input:
-            x: [B, 3, 96, 96]
-        Output:
-            patch embeddings: [B, N, D]
-        """
-        # [B, D, gh, gw]
         x = self.proj(x)
-
         # flatten
         x = x.flatten(2).transpose(1, 2)   # [B, N, D]
 
