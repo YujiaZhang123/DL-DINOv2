@@ -19,7 +19,7 @@ class SSLArch(nn.Module):
         drop_path_rate=0.0,
         num_prototypes=8192,
         n_global_crops=2,
-        n_local_crops=4,
+        n_local_crops=5,
     ):
         super().__init__()
 
