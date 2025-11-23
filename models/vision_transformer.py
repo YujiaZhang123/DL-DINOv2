@@ -27,7 +27,7 @@ class VisionTransformer(nn.Module):
     def __init__(
         self,
         img_size: int = 96,
-        patch_size: int = 8,
+        patch_size: int = 16,
         embed_dim: int = 768,
         depth: int = 12,
         num_heads: int = 12,
@@ -46,7 +46,7 @@ class VisionTransformer(nn.Module):
             embed_dim=embed_dim,
         )
 
-        num_patches = self.patch_embed.num_patches  # 96x96 -> 12x12 -> 144
+        num_patches = self.patch_embed.num_patches  # 96x96 -> 6×6=36 tokens
 
         # Optional PatchNorm
         self.use_patchnorm = use_patchnorm
