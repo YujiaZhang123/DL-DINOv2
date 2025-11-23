@@ -28,14 +28,14 @@ class VisionTransformer(nn.Module):
         self,
         img_size: int = 96,
         patch_size: int = 8,
-        embed_dim: int = 384,
+        embed_dim: int = 768,
         depth: int = 12,
-        num_heads: int = 6,
+        num_heads: int = 12,
         mlp_ratio: float = 4.0,
-        drop_path_rate: float = 0.0,
-        dropout_rate: float = 0.0,     # newly added
-        use_patchnorm: bool = True,    # newly added
-        use_layerscale: bool = True,   # newly added
+        drop_path_rate: float = 0.1,
+        dropout_rate: float = 0.0,     
+        use_patchnorm: bool = True,    
+        use_layerscale: bool = True,  
     ):
         super().__init__()
 
