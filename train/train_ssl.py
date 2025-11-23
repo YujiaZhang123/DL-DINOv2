@@ -43,8 +43,8 @@ class TrainingConfig:
     local_crops_scale: tuple = (0.05, 0.3)
 
     # ----- optimization -----
-    batch_size: int = 200             
-    num_workers: int = 36
+    batch_size: int = 250             
+    num_workers: int = 26
     epochs: int = 260
     base_lr: float = 3e-4
     min_lr: float = 3e-6
@@ -55,8 +55,8 @@ class TrainingConfig:
     momentum_teacher_final: float = 0.9995
 
     teacher_temp_warmup: float = 0.04
-    teacher_temp_final: float = 0.075
-    teacher_temp_warmup_epochs: int = 10
+    teacher_temp_final: float = 0.07
+    teacher_temp_warmup_epochs: int = 20
 
     device: str = "cuda"
     output_dir: str = "checkpoints"
