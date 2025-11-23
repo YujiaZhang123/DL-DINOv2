@@ -27,7 +27,7 @@ class TrainingConfig:
     local_dir: str = "./hf_dataset"   # use local data
     split: str = "train"              # use train/ folder
     img_size: int = 96
-    patch_size: int = 8              
+    patch_size: int = 16              
 
     # ----- model -----
     embed_dim: int = 768
