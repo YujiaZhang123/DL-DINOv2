@@ -32,7 +32,7 @@ class VisionTransformer(nn.Module):
         depth: int = 12,
         num_heads: int = 6,
         mlp_ratio: float = 4.0,
-        drop_path_rate: float = 0.1,
+        drop_path_rate: float = 0.0,
         dropout_rate: float = 0.0,     # newly added
         use_patchnorm: bool = True,    # newly added
         use_layerscale: bool = True,   # newly added
