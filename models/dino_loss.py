@@ -17,7 +17,7 @@ class DINOLoss(nn.Module):
         out_dim: int,
         student_temp: float = 0.1,
         teacher_temp: float = 0.04,
-        center_momentum: float = 0.95, 
+        center_momentum: float = 0.98, 
     ):
         super().__init__()
 
