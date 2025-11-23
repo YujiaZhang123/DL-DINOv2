@@ -55,7 +55,7 @@ class TrainingConfig:
     momentum_teacher_final: float = 0.9995
 
     teacher_temp_warmup: float = 0.04
-    teacher_temp_final: float = 0.04
+    teacher_temp_final: float = 0.07
     teacher_temp_warmup_epochs: int = 10
 
     device: str = "cuda"
