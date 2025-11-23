@@ -38,7 +38,7 @@ class TrainingConfig:
 
     # ----- multi-crop -----
     n_global_crops: int = 2
-    n_local_crops: int = 5
+    n_local_crops: int = 6
     global_crops_scale: tuple = (0.4, 1.0)
     local_crops_scale: tuple = (0.05, 0.3)
 
