@@ -30,22 +30,22 @@ class TrainingConfig:
     patch_size: int = 8              
 
     # ----- model -----
-    embed_dim: int = 384
+    embed_dim: int = 768
     depth: int = 12
-    num_heads: int = 6
+    num_heads: int = 12
     mlp_ratio: float = 4.0
-    num_prototypes: int = 8192
+    num_prototypes: int = 16384
 
     # ----- multi-crop -----
     n_global_crops: int = 2
-    n_local_crops: int = 5
+    n_local_crops: int = 6
     global_crops_scale: tuple = (0.4, 1.0)
     local_crops_scale: tuple = (0.05, 0.3)
 
     # ----- optimization -----
     batch_size: int = 250             
     num_workers: int = 20
-    epochs: int = 260
+    epochs: int = 220
     base_lr: float = 3e-4
     min_lr: float = 1e-5
     weight_decay: float = 0.04
@@ -55,7 +55,7 @@ class TrainingConfig:
     momentum_teacher_final: float = 0.9995
 
     teacher_temp_warmup: float = 0.04
-    teacher_temp_final: float = 0.07
+    teacher_temp_final: float = 0.08
     teacher_temp_warmup_epochs: int = 10
 
     device: str = "cuda"
@@ -163,7 +163,7 @@ def build_model(cfg):
         depth=cfg.depth,
         num_heads=cfg.num_heads,
         mlp_ratio=cfg.mlp_ratio,
-        drop_path_rate=0.0,
+        drop_path_rate=0.1,
         num_prototypes=cfg.num_prototypes,
         n_global_crops=cfg.n_global_crops,
         n_local_crops=cfg.n_local_crops,
