@@ -16,10 +16,10 @@ class SSLArch(nn.Module):
         depth=12,
         num_heads=6,
         mlp_ratio=4.0,
-        drop_path_rate=0.1,
+        drop_path_rate=0.0,
         num_prototypes=8192,
         n_global_crops=2,
-        n_local_crops=6,
+        n_local_crops=4,
     ):
         super().__init__()
 
