@@ -38,15 +38,15 @@ class TrainingConfig:
 
     # ----- multi-crop -----
     n_global_crops: int = 2
-    n_local_crops: int = 4
+    n_local_crops: int = 5
     global_crops_scale: tuple = (0.4, 1.0)
     local_crops_scale: tuple = (0.05, 0.3)
 
     # ----- optimization -----
-    batch_size: int = 200             
+    batch_size: int = 250             
     num_workers: int = 20
     epochs: int = 160
-    base_lr: float = 2e-4
+    base_lr: float = 3e-4
     min_lr: float = 1e-5
     weight_decay: float = 0.04
     warmup_epochs: int = 10
