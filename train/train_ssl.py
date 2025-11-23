@@ -34,7 +34,7 @@ class TrainingConfig:
     depth: int = 12
     num_heads: int = 12
     mlp_ratio: float = 4.0
-    num_prototypes: int = 16384
+    num_prototypes: int = 8192
 
     # ----- multi-crop -----
     n_global_crops: int = 2
@@ -45,9 +45,9 @@ class TrainingConfig:
     # ----- optimization -----
     batch_size: int = 250             
     num_workers: int = 20
-    epochs: int = 220
+    epochs: int = 260
     base_lr: float = 3e-4
-    min_lr: float = 1e-5
+    min_lr: float = 3e-6
     weight_decay: float = 0.04
     warmup_epochs: int = 10
 
@@ -55,7 +55,7 @@ class TrainingConfig:
     momentum_teacher_final: float = 0.9995
 
     teacher_temp_warmup: float = 0.04
-    teacher_temp_final: float = 0.08
+    teacher_temp_final: float = 0.075
     teacher_temp_warmup_epochs: int = 10
 
     device: str = "cuda"
