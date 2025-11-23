@@ -69,7 +69,7 @@ class DataAugmentationDINO(object):
             GaussianBlur(p=0.1),
             transforms.RandomSolarize(threshold=128, p=0.2),
         ])
-        local_transfo_extra = GaussianBlur(p=0.2)
+        local_transfo_extra = GaussianBlur(p=0.5)
 
         # ========= normalization ==========
         self.normalize = transforms.Compose([
