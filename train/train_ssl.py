@@ -251,7 +251,7 @@ def train(cfg: TrainingConfig):
 
         print(f"[epoch {epoch+1}] avg_loss = {epoch_loss/steps_per_epoch:.4f}")
 
-        if epoch == 0 or (epoch + 1) % 5 == 0 or (epoch + 1) == cfg.epochs:
+        if epoch == 0 or (epoch + 1) % 10 == 0 or (epoch + 1) == cfg.epochs:
             ckpt = {
                 "epoch": epoch + 1,
                 "student_backbone": model.student_backbone.state_dict(),
