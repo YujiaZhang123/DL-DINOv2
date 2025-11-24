@@ -251,11 +251,10 @@ def train(cfg: TrainingConfig):
 
         print(f"[epoch {epoch+1}] avg_loss = {epoch_loss/steps_per_epoch:.4f}")
 
-        if (epoch + 1) % 5 == 0 or (epoch + 1) == cfg.epochs:
+        if epoch == 0 or (epoch + 1) % 5 == 0 or (epoch + 1) == cfg.epochs:
             ckpt = {
                 "epoch": epoch + 1,
                 "student_backbone": model.student_backbone.state_dict(),
-                "student_head": model.student_head.state_dict(),
             }
             ckpt_path = os.path.join(cfg.output_dir, f"epoch_{epoch+1}.pth")
             torch.save(ckpt, ckpt_path)
