@@ -45,7 +45,7 @@ class TrainingConfig:
     # ----- optimization -----
     batch_size: int = 300             
     num_workers: int = 26
-    epochs: int = 320
+    epochs: int = 380
     base_lr: float = 2e-4
     min_lr: float = 2e-6
     weight_decay: float = 0.04
