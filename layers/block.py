@@ -31,8 +31,8 @@ class TransformerBlock(nn.Module):
 
         # -------- LayerScale --------
         if use_layerscale:
-            self.gamma1 = nn.Parameter(1e-4 * torch.ones(embed_dim))
-            self.gamma2 = nn.Parameter(1e-4 * torch.ones(embed_dim))
+            self.gamma1 = nn.Parameter(1e-5 * torch.ones(embed_dim))
+            self.gamma2 = nn.Parameter(1e-5 * torch.ones(embed_dim))
         else:
             self.gamma1 = None
             self.gamma2 = None
