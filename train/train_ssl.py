@@ -27,12 +27,12 @@ class TrainingConfig:
     local_dir: str = "./hf_dataset"   # use local data
     split: str = "train"              # use train/ folder
     img_size: int = 96
-    patch_size: int = 16              
+    patch_size: int = 12              
 
     # ----- model -----
-    embed_dim: int = 768
+    embed_dim: int = 512
     depth: int = 12
-    num_heads: int = 12
+    num_heads: int = 8
     mlp_ratio: float = 4.0
     num_prototypes: int = 8192
 
@@ -40,23 +40,23 @@ class TrainingConfig:
     n_global_crops: int = 2
     n_local_crops: int = 6
     global_crops_scale: tuple = (0.4, 1.0)
-    local_crops_scale: tuple = (0.05, 0.3)
+    local_crops_scale: tuple = (0.1, 0.3)
 
     # ----- optimization -----
-    batch_size: int = 300             
+    batch_size: int = 250             
     num_workers: int = 26
-    epochs: int = 380
+    epochs: int = 250
     base_lr: float = 2e-4
     min_lr: float = 2e-6
     weight_decay: float = 0.04
-    warmup_epochs: int = 10
+    warmup_epochs: int = 15
 
     momentum_teacher_base: float = 0.995
     momentum_teacher_final: float = 0.9995
 
     teacher_temp_warmup: float = 0.04
     teacher_temp_final: float = 0.07
-    teacher_temp_warmup_epochs: int = 20
+    teacher_temp_warmup_epochs: int = 25
 
     device: str = "cuda"
     output_dir: str = "checkpoints"
@@ -163,7 +163,7 @@ def build_model(cfg):
         depth=cfg.depth,
         num_heads=cfg.num_heads,
         mlp_ratio=cfg.mlp_ratio,
-        drop_path_rate=0.1,
+        drop_path_rate=0.03,
         num_prototypes=cfg.num_prototypes,
         n_global_crops=cfg.n_global_crops,
         n_local_crops=cfg.n_local_crops,
