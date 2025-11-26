@@ -49,7 +49,7 @@ class TrainingConfig:
     base_lr: float = 2e-4
     min_lr: float = 2e-6
     weight_decay: float = 0.04
-    warmup_epochs: int = 15
+    warmup_epochs: int = 12
 
     momentum_teacher_base: float = 0.995
     momentum_teacher_final: float = 0.9995
