@@ -11,7 +11,7 @@ class SSLArch(nn.Module):
     def __init__(
         self,
         img_size=96,
-        patch_size=12,
+        patch_size=8,
         embed_dim=512,
         depth=12,
         num_heads=8,
