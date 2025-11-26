@@ -27,7 +27,7 @@ class VisionTransformer(nn.Module):
     def __init__(
         self,
         img_size: int = 96,
-        patch_size: int = 12,
+        patch_size: int = 8,
         embed_dim: int = 512,
         depth: int = 12,
         num_heads: int = 8,
