@@ -24,7 +24,7 @@ from models.ssl import SSLArch
 @dataclass
 class TrainingConfig:
     # ----- data -----
-    local_dir: str = "./hf_dataset"   # use local data
+    local_dir: str = "/tmp/hf_dataset"   # use local data
     split: str = "train"              # use train/ folder
     img_size: int = 96
     patch_size: int = 8              
